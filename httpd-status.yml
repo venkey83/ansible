@@ -27,3 +27,57 @@
 [webservers]
 13.234.111.194
 65.0.134.97
+
+==========================
+[root@ip-172-31-44-76 ec2-user]# cat ak.yml
+- hosts: localhost
+  gather_facts: yes
+  hosts: webservers
+  tasks:
+  - name: checking service status
+    command: service "{{ item }}" status
+    with_items:
+    - httpd
+      #    - sshd
+    register: result
+    ignore_errors: yes
+  - name: showing report
+    debug:
+     var: result
+
+============================================
+
+[root@ip-172-31-44-76 home]# cat httpd1.yml
+---
+- hosts: localhost
+  vars:
+    http_port: 80
+      #    max_clients: 200
+  remote_user: root
+  tasks:
+  - name: ensure apache is at the latest version
+    yum:
+      name: httpd
+      state: latest
+  - name: ensure apache is running
+    service:
+      name: httpd
+      state: started
+  handlers:
+  - name: restart apache
+    service:
+      name: httpd
+      state: restarted
+  tasks:
+  - name: checking service status
+    command: service "{{ item }}" status
+    with_items:
+    - httpd
+      #    - sshd
+    register: result
+    ignore_errors: yes
+  - name: showing report
+    debug:
+      var: result
+
+===========================================
